@@ -1,7 +1,7 @@
 # Perfecto-Splunk-Connector
-Collects test data during executions and exports to Splunk HEC
+This project collects test data during executions and exports to Splunk HEC
 
-This project was intended to be used with the Quantum Framework although can easily be adapted into any Java TestNG Frameworks as well.
+This project was intended to be used with the Quantum Framework although can easily be adapted into any Java TestNG Framework as well.
 
 The test data is collected after each execution and arranged into JSON format prior to exporting to Splunk. 
 
