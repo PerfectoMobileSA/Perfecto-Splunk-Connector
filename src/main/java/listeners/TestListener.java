@@ -1,7 +1,8 @@
-package listerners;
+package listeners;
 
 import com.qmetry.qaf.automation.step.QAFTestStepProvider;
 import com.quantum.listeners.QuantumReportiumListener;
+import com.quantum.utils.ConsoleUtils;
 import cucumber.api.java.en.Then;
 import org.testng.*;
 import java.io.PrintWriter;
@@ -11,10 +12,20 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.qmetry.qaf.automation.core.ConfigurationManager.getBundle;
-import static com.quantum.utils.DeviceUtils.getQAFDriver;
-
+/**
+ * TestNG listener class that collects the Splunk host data upon test suite start. Further collects test data after each test
+ * method finishes, and lastly, upon test suite finish, arranges the test data into JSON events and sends to Splunk.
+ */
 public class TestListener implements ISuiteListener, ITestListener {
+
+    @Override
+    public void onStart(ISuite arg0) { SplunkHelper.setSplunk();}
+
+    @Override
+    public void onTestStart(ITestResult result) { SplunkHelper.getCollector().testExecutionStart(); }
+
+    @Override
+    public void onStart(ITestContext context) { SplunkHelper.setSplunk();}
 
 	@Override
 	public void onTestSuccess(ITestResult testResult) {
@@ -22,10 +33,7 @@ public class TestListener implements ISuiteListener, ITestListener {
 	}
 
 	@Override
-	public void onTestFailure(ITestResult testResult) {
-
-		setDetails("Fail", testResult);
-	}
+	public void onTestFailure(ITestResult testResult) { setDetails("Fail", testResult); }
 
 	@Override
 	public void onTestSkipped(ITestResult result) {
@@ -48,15 +56,15 @@ public class TestListener implements ISuiteListener, ITestListener {
 
 		if (!result.equalsIgnoreCase("Skip")) {
 
-			SplunkHelper.getCollector().reporting.put("model", (String) SplunkHelper.getDeviceInfo("model"));
-			SplunkHelper.getCollector().reporting.put("device", (String) SplunkHelper.getDeviceInfo("deviceID"));
-			SplunkHelper.getCollector().reporting.put("os", (String) SplunkHelper.getDeviceInfo("os"));
-			SplunkHelper.getCollector().reporting.put("location", (String) SplunkHelper.getDeviceInfo("location"));
-			SplunkHelper.getCollector().reporting.put("description", (String) SplunkHelper.getDeviceInfo("description"));
+			SplunkHelper.getCollector().reporting.put("model", SplunkHelper.getDeviceInfo("model"));
+			SplunkHelper.getCollector().reporting.put("device", SplunkHelper.getDeviceInfo("deviceID"));
+			SplunkHelper.getCollector().reporting.put("os", SplunkHelper.getDeviceInfo("os"));
+			SplunkHelper.getCollector().reporting.put("location", SplunkHelper.getDeviceInfo("location"));
+			SplunkHelper.getCollector().reporting.put("description", SplunkHelper.getDeviceInfo("description"));
 			try {
-				SplunkHelper.getCollector().reporting.put("monitorTag", (String) SplunkHelper.getMonitorTag());
+				SplunkHelper.getCollector().reporting.put("monitorTag", SplunkHelper.getMonitorTag());
 			} catch (Exception ex) {
-
+                ConsoleUtils.logInfoBlocks("This test does not contain a monitor tag.");
 			}
 		}
 
@@ -70,58 +78,39 @@ public class TestListener implements ISuiteListener, ITestListener {
 		}
 
 		if (!result.equalsIgnoreCase("Skip")) {
-			// Sets the end time of the test
-			// Divides the start and end time to create a test duration in
-			// seconds
-			// and finally converts the start/end time to real date formats
+
+    // Report logger that accomplishes 3 things.
+    //  1. Sets the end time of the test.
+    //  2. Divides the start and end time to create a test duration in seconds.
+    //  3. Converts the start/end time to real date formats.
 			SplunkHelper.getCollector().testExecutionEnd();
 		}
+
 		SplunkHelper.getCollector().reporting.put("testName", testResult.getTestContext().getName());
 		SplunkHelper.getCollector().reporting.put("methodName", testResult.getMethod().getMethodName());
 		SplunkHelper.getCollector().reporting.put("executionID", SplunkHelper.getQAFDriver().getCapabilities().getCapability("executionId"));
 		SplunkHelper.getCollector().reporting.put("reportiumReport", QuantumReportiumListener.getReportClient().getReportUrl());
 		SplunkHelper.getCollector().submitReporting(testResult.getMethod().getMethodName());
 	}
-
+// Arranges test data into JSON events.
 	@Override
 	public void onFinish(ISuite arg0) {
 		try {
 			SplunkHelper.getCollector().commitSplunk();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
 	@Override
-	public void onStart(ISuite arg0) {
-		SplunkHelper.setSplunk();
-	}
+	public void onTestFailedButWithinSuccessPercentage(ITestResult result) {}
 
 	@Override
-	public void onTestStart(ITestResult result) {
+	public void onFinish(ITestContext context) {}
 
-		// TODO Auto-generated method stub
-		SplunkHelper.getCollector().testExecutionStart();
-	}
-
-	@Override
-	public void onTestFailedButWithinSuccessPercentage(ITestResult result) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void onStart(ITestContext context) {
-		// TODO Auto-generated method stub
-		SplunkHelper.setSplunk();
-	}
-
-	@Override
-	public void onFinish(ITestContext context) {
-		// TODO Auto-generated method stub
-
-	}
+    /**
+     * The PerfectoSplunkSteps methods are intended to be used in a Quantum Cucumber implementation for text or image checkpoint timers.
+     */
 
 	@QAFTestStepProvider
     public static class PerfectoSplunkSteps {
@@ -141,8 +130,7 @@ public class TestListener implements ISuiteListener, ITestListener {
             params1.put("analysis", "automatic");
             Object result1 = SplunkHelper.getQAFDriver().executeScript("mobile:checkpoint:text", params1);
 
-            if (result1.toString().contains("true")) {
-            } else {
+            if (!result1.toString().contains("true")) {
                 throw new Exception("Text not found!");
             }
             SplunkHelper.testStepEnd(Long.parseLong(SLA), name);
@@ -163,9 +151,7 @@ public class TestListener implements ISuiteListener, ITestListener {
             params1.put("threshold", threshold);
             Object result1 = SplunkHelper.getQAFDriver().executeScript("mobile:checkpoint:image", params1);
 
-            if (result1.toString().contains("true")) {
-
-            } else {
+            if (!result1.toString().contains("true")) {
                 throw new Exception("Image not found!");
             }
             SplunkHelper.testStepEnd(Long.parseLong(SLA), name);

@@ -6,17 +6,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
-import java.net.InetAddress;
 import java.net.Proxy;
 import java.net.URL;
 import java.net.UnknownHostException;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-//Class used to connect to splunk and submit the values to the index
+//Class used to connect to Splunk and submit the values to the index.
 public class SplunkConnect {
 
 	private String splunkScheme;
@@ -28,60 +23,20 @@ public class SplunkConnect {
 
 	private final String UTF_8 = "UTF-8";
 
-	public enum availableSchemes {
-		http, https
-	}
-
-	public String getSplunkHost() {
+	String getSplunkHost() {
 		return splunkHost;
 	}
 
-	public void setSplunkHost(String splunkHost) {
-		this.splunkHost = splunkHost;
-	}
-
-	public String getSplunkScheme() {
-		return splunkScheme;
-	}
-
-	public void setSplunkScheme(String splunkScheme) {
-		this.splunkScheme = splunkScheme;
-	}
-
-	public void setSplunkChannel(String splunkChannel) {
-		this.splunkChannel = splunkChannel;
-	}
-
-	public String getSplunkChannel() {
-		return splunkChannel;
-	}
-
-	public String getSplunkPort() {
-		return splunkPort;
-	}
-
-	public void setSplunkPort(String splunkPort) {
-		this.splunkPort = splunkPort;
-	}
-
-	public String getSplunkToken() {
-		return splunkToken;
-	}
-
-	public void setSplunkToken(String splunkToken) {
-		this.splunkToken = splunkToken;
-	}
-
-	// Set the splunk instance connection values
-	public SplunkConnect(String splunkScheme, String splunkHost, String splunkPort, String splunkToken) {
+	// Set the splunk instance connection values.
+	SplunkConnect(String splunkScheme, String splunkHost, String splunkPort, String splunkToken) {
 		this.splunkScheme = splunkScheme;
 		this.splunkHost = splunkHost;
 		this.splunkPort = splunkPort;
 		this.splunkToken = splunkToken;
 	}
 
-	// Set the splunk instance connection values
-	public SplunkConnect(String splunkScheme, String splunkHost, String splunkPort, String splunkToken, Proxy proxy) {
+	// Set the splunk instance connection values.
+	SplunkConnect(String splunkScheme, String splunkHost, String splunkPort, String splunkToken, Proxy proxy) {
 		this.splunkScheme = splunkScheme;
 		this.splunkHost = splunkHost;
 		this.splunkPort = splunkPort;
@@ -89,8 +44,8 @@ public class SplunkConnect {
 		this.proxy = proxy;
 	}
 
-	// Set the splunk instance connection values
-	public SplunkConnect(String splunkScheme, String splunkHost, String splunkPort, String splunkToken,
+	// Set the splunk instance connection values.
+	SplunkConnect(String splunkScheme, String splunkHost, String splunkPort, String splunkToken,
 						 String splunkChannel) {
 		this.splunkScheme = splunkScheme;
 		this.splunkHost = splunkHost;
@@ -100,7 +55,7 @@ public class SplunkConnect {
 	}
 
 	// Set the splunk instance connection values
-	public SplunkConnect(String splunkScheme, String splunkHost, String splunkPort, String splunkToken,
+	SplunkConnect(String splunkScheme, String splunkHost, String splunkPort, String splunkToken,
 						 String splunkChannel, Proxy proxy) {
 		this.splunkScheme = splunkScheme;
 		this.splunkHost = splunkHost;
@@ -113,7 +68,7 @@ public class SplunkConnect {
 	public void main(String[] args) throws Exception {
 	}
 
-	public boolean isJSONValid(String jsonInString) {
+	private boolean isJSONValid(String jsonInString) {
 		try {
 			final ObjectMapper mapper = new ObjectMapper();
 			mapper.readTree(jsonInString);
@@ -123,7 +78,8 @@ public class SplunkConnect {
 		}
 	}
 
-	public String splunkFeed(String value) throws Exception {
+//	Sets and sends the request to Splunk with the JSON test data.
+	void splunkFeed(String value) throws Exception {
 
 		if (!isJSONValid(value)) {
 			throw new Exception("Invalid JSON String, please correct and try again");
@@ -131,15 +87,13 @@ public class SplunkConnect {
 
 		URL obj;
 		if (splunkPort != null) {
-			obj = new URL(splunkScheme.toString() + "://" + splunkHost + ":" + splunkPort + "/services/collector");
+			obj = new URL(splunkScheme + "://" + splunkHost + ":" + splunkPort + "/services/collector");
 		} else {
-			obj = new URL(splunkScheme.toString() + "://" + splunkHost + "/services/collector");
+			obj = new URL(splunkScheme + "://" + splunkHost + "/services/collector");
 		}
 
 		try {
-			HttpURLConnection con = null;
-
-			// HttpsTrustManager.allowAllSSL();
+			HttpURLConnection con;
 
 			if (proxy != null) {
 				con = (HttpURLConnection) obj.openConnection(proxy);
@@ -148,7 +102,6 @@ public class SplunkConnect {
 			}
 			con.setRequestProperty("Content-Type", "application/json");
 			con.setDoOutput(true);
-
 			con.setRequestProperty("Authorization", "Splunk " + splunkToken);
 
 			if(splunkChannel != null)
@@ -175,9 +128,8 @@ public class SplunkConnect {
 
 			System.out.println("\nSending 'GET' request to URL : " + obj.toURI());
 			System.out.println("Response Code : " + responseCode);
-			System.out.println("Response message: " + response.toString());
+			System.out.println("Response message: " + response);
 
-			return response;
 		} catch (UnknownHostException ex) {
 			throw new Exception(ex.getMessage() + "\nHostname is invalid please correct and try again.");
 		} catch (Exception ex) {
@@ -204,8 +156,7 @@ public class SplunkConnect {
 		InputStream errorStream = connection.getErrorStream();
 		if (errorStream != null) {
 			InputStreamReader inputStreamReader = new InputStreamReader(errorStream, UTF_8);
-			BufferedReader bufferReader = new BufferedReader(inputStreamReader);
-			try {
+			try (BufferedReader bufferReader = new BufferedReader(inputStreamReader)) {
 				StringBuilder builder = new StringBuilder();
 				String outputString;
 				while ((outputString = bufferReader.readLine()) != null) {
@@ -216,8 +167,6 @@ public class SplunkConnect {
 				}
 				String response = builder.toString();
 				msg += "Response: " + response;
-			} finally {
-				bufferReader.close();
 			}
 		}
 		throw new RuntimeException(msg);
@@ -226,9 +175,8 @@ public class SplunkConnect {
 	private String getStream(HttpURLConnection connection) throws IOException {
 		InputStream inputStream = connection.getInputStream();
 		InputStreamReader inputStreamReader = new InputStreamReader(inputStream, UTF_8);
-		BufferedReader bufferReader = new BufferedReader(inputStreamReader);
-		String response = "";
-		try {
+		String response;
+		try (BufferedReader bufferReader = new BufferedReader(inputStreamReader)) {
 			StringBuilder builder = new StringBuilder();
 			String outputString;
 			while ((outputString = bufferReader.readLine()) != null) {
@@ -238,8 +186,6 @@ public class SplunkConnect {
 				builder.append(outputString);
 			}
 			response = builder.toString();
-		} finally {
-			bufferReader.close();
 		}
 		return response;
 	}

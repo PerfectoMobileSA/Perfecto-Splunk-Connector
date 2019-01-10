@@ -2,13 +2,12 @@
 <suite name="Web Demo Suite" verbose="0" parallel="tests"
 	thread-count="10">
 	<listeners>
-        <listener class-name="listerners.TestListener"/>
+        <listener class-name="listeners.TestListener"/>
 		<listener class-name="com.quantum.listeners.QuantumReportiumListener" />
 	</listeners>
 
-	<test name="iOS  Test 1" enabled="true"
-				 thread-count="10">
-	<parameter name="driver.capabilities.deviceName" value=""></parameter>
+	<test name="Android  Test 1" enabled="true" thread-count="10">
+	<parameter name="driver.capabilities.model" value="Galaxy S6"></parameter>
 	<groups>
 		<run>
 			<include name="@Test_1" />
@@ -21,9 +20,8 @@
 				name="com.qmetry.qaf.automation.step.client.gherkin.GherkinScenarioFactory" />
 	</classes>
 </test>
-	<test name="iOS  Test 2" enabled="true"
-		  thread-count="10">
-		<parameter name="driver.capabilities.deviceName" value=""></parameter>
+	<test name="Android  Test 2" enabled="false" thread-count="10">
+		<parameter name="driver.capabilities.model" value="Galaxy S6"></parameter>
 		<groups>
             <run>
                 <include name="@Test_1" />
@@ -36,8 +34,8 @@
 					name="com.qmetry.qaf.automation.step.client.gherkin.GherkinScenarioFactory" />
 		</classes>
 	</test>
-	<test name="Android Test 1" enabled="true" thread-count="10">
-		<parameter name="driver.capabilities.deviceName" value=""></parameter>
+	<test name="iOS Test 1" enabled="false" thread-count="10">
+		<parameter name="driver.capabilities.model" value="iPhone 7"></parameter>
 		<groups>
             <run>
                 <include name="@Test_1" />
@@ -50,9 +48,8 @@
 				name="com.qmetry.qaf.automation.step.client.gherkin.GherkinScenarioFactory" />
 		</classes>
 	</test>
-	<test name="Android Test 2" enabled="true" thread-count="10">
-		<!--Galaxy 6-->
-		<parameter name="driver.capabilities.deviceName" value="05157DF5399ED633"></parameter>
+	<test name="iOS Test 2" enabled="false" thread-count="10">
+		<parameter name="driver.capabilities.model" value="iPhone 7"></parameter>
 		<groups>
             <run>
                 <include name="@Test_1" />

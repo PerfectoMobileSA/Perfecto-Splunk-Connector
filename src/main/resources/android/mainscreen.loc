@@ -1,3 +1,5 @@
+#locator repository for an example Calculator app test.
+
 input.box = {\"locator\":\"id=com.sec.android.app.popupcalculator:id/txtCalc\",\"desc\":\"Input box\"}
 btn.plus = {\"locator\":\"id=com.sec.android.app.popupcalculator:id/bt_add\",\"desc\":\"Plus Button\"}
 btn.multiplication = {\"locator\":\"xpath=//*[@resource-id='com.sec.android.app.popupcalculator:id/bt_mul']\",\"desc\":\"Multiplication Button\"}

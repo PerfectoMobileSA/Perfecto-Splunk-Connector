@@ -10,43 +10,38 @@ public abstract class Reporting {
 
 	private long testexecutionstartmilli;
 	private long testexecutionendmilli;
-	public HashMap<String, Object> steps = new HashMap<String, Object>();
-	public HashMap<String, Object> reporting = new HashMap<String, Object>();
-	public HashMap<String, HashMap> reportingResults = new HashMap<String, HashMap>();
-	//	public ArrayList reportingResults = new ArrayList<HashMap>();
-	public ArrayList<Object> stepCollector = new ArrayList<Object>();
+	HashMap<String, Object> steps = new HashMap<>();
+	public HashMap<String, Object> reporting = new HashMap<>();
+	HashMap<String, HashMap> reportingResults = new HashMap<>();
+	ArrayList<Object> stepCollector = new ArrayList<>();
 	private long sla = 999999999;
-	public SplunkConnect splunk = null;
+	SplunkConnect splunk = null;
 
-	public HashMap<String, Object> getReporting() {
-		return new HashMap<String, Object>();
-	}
-
-	public Reporting(long sla, String splunkScheme, String splunkHost, String splunkPort, String splunkToken) {
+	Reporting(long sla, String splunkScheme, String splunkHost, String splunkPort, String splunkToken) {
 		setSla(sla);
 		splunk = new SplunkConnect(splunkScheme, splunkHost, splunkPort, splunkToken);
 	}
 
-	public Reporting(long sla, String splunkScheme, String splunkHost, String splunkPort, String splunkToken, Proxy proxy) {
+	Reporting(long sla, String splunkScheme, String splunkHost, String splunkPort, String splunkToken, Proxy proxy) {
 		setSla(sla);
 		splunk = new SplunkConnect(splunkScheme, splunkHost, splunkPort, splunkToken, proxy);
 	}
 
-	public Reporting(long sla, String splunkScheme, String splunkHost, String splunkPort, String splunkToken, String splunkChannel) {
+	Reporting(long sla, String splunkScheme, String splunkHost, String splunkPort, String splunkToken, String splunkChannel) {
 		setSla(sla);
 		splunk = new SplunkConnect(splunkScheme, splunkHost, splunkPort, splunkToken, splunkChannel);
 	}
 
-	public Reporting(long sla, String splunkScheme, String splunkHost, String splunkPort, String splunkToken, String splunkChannel, Proxy proxy) {
+	Reporting(long sla, String splunkScheme, String splunkHost, String splunkPort, String splunkToken, String splunkChannel, Proxy proxy) {
 		setSla(sla);
 		splunk = new SplunkConnect(splunkScheme, splunkHost, splunkPort, splunkToken, splunkChannel, proxy);
 	}
 
-	public long getSla() {
+	private long getSla() {
 		return this.sla;
 	}
 
-	public void setSla(long sla) {
+	private void setSla(long sla) {
 		this.sla = sla;
 	}
 
@@ -74,7 +69,7 @@ public abstract class Reporting {
 	// sets the values for the start of a transaction
 	public void startTransaction(String step, String text) {
 		String status = "Fail";
-		HashMap<String, Object> stepDetails = new HashMap<String, Object>();
+		HashMap<String, Object> stepDetails = new HashMap<>();
 		stepDetails.put("step", step);
 		stepDetails.put("stepStatus", status);
 		stepDetails.put("stepDescription", text);
@@ -87,7 +82,8 @@ public abstract class Reporting {
 
 	// sets the values for the end of the transaction and adds the values to the
 	// step collector
-	public void endTransaction(String step, Long time) throws Exception {
+
+	private void endTransaction(String step, Long time) throws Exception {
 		Object stepDesription = "";
 		Object stepStartTimestamp = "";
 		String status = "";
@@ -117,7 +113,7 @@ public abstract class Reporting {
 			throw new Exception("Transaction Not Found");
 		} else {
 
-			HashMap<String, Object> stepDetails = new HashMap<String, Object>();
+			HashMap<String, Object> stepDetails = new HashMap<>();
 			stepDetails.put("step", step);
 			stepDetails.put("stepStatus", status);
 			stepDetails.put("stepDescription", stepDesription);
